@@ -30,11 +30,12 @@ def move_player():
         player[2] =-5 #update velocity
     elif keys[pygame.K_RIGHT]:
         player[2] = 5 #update velocity
-    elif keys[pygame.K_UP]:
-        player[3] -= 2
-        isOnGround = False
     else:
         player[2] = 0
+        
+    if keys[pygame.K_UP]:
+        player[3] -= 2
+        isOnGround = False
         
     if isOnGround == False:
         player[3] += 1 #gravity
