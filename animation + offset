@@ -1,0 +1,144 @@
+import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800,800))
+pygame.display.set_caption("side scroller")
+clock = pygame.time.Clock()
+
+player = [100, 450, 0, 0] #xpos, ypos, xvel, yvel
+isOnGround = False
+offset = 0
+platforms = [(500,600), (700, 500)]
+
+frameWidth = 96
+frameHeight = 96
+RowNum = 0 #for left animation, this will need to change for other animations
+frameNum = 0
+ticker = 0
+
+Guy = pygame.image.load('Guy2.png') #load your spritesheet
+Guy.set_colorkey((255, 0, 255)) #this makes bright pink (255, 0, 255) transparent (sort of)
+
+running = True
+
+def draw_clouds():
+    for x in range(-10000, 80000, 300): #(starting point, ending point, distance)
+        for i in range (3):
+            pygame.draw.circle(screen, (255,255,255), (x + offset, 100), 40)
+            pygame.draw.circle(screen, (255,255,255), (x-50 + offset , 125), 40)
+            pygame.draw.circle(screen, (255,255,255), (x+50 + offset, 125), 40)
+        pygame.draw.rect(screen, (255,255,255), (x-50 + offset, 100, 100, 65))
+
+def draw_platforms():
+        for i in range(len(platforms)):
+            pygame.draw.rect(screen, (150, 10, 10), (platforms[i][0] + offset, platforms[i][1], 100, 30))
+
+def draw_trees():
+    for x in range(-500000, 80000, 200):
+        for i in range (3):
+            pygame.draw.rect(screen, (101, 67, 33), (x+30 + offset , 400, 25, 600))
+            pygame.draw.circle(screen, (20, 170, 20), (x+20 + offset, 420), 40)
+            pygame.draw.circle(screen, (20, 170, 20), (x+65 + offset, 420), 40)
+            pygame.draw.circle(screen, (20, 170, 20), (x+45 + offset, 380), 40)
+        
+def move_player():
+    global isOnGround #needed to modify a global variable from within a function
+    global offset
+    
+    for i in range(len(platforms)):
+        if player[0]+50>platforms[i][0]+offset and player[0]< platforms[i][0]+100+offset and player[1]+50>platforms[i][1] and player[1]+50<platforms[i][1]+50:
+            isOnGround = True
+            player[1]=platforms[i][1]-50
+            player[3] = 0
+            RowNum = 0
+    
+    if keys[pygame.K_LEFT]:
+        if offset > 260 and player[0]>0: #check if you've reached the left edge of the map
+            player[2] = -5#let player approach side of game screen
+            RowNum = 0
+            
+        elif player[0]>400 and offset < -1500:#check if we're on the far right edge of the map
+            player[2] = -5#let player get back to the center of the game screen
+            RowNum = 0
+        
+        elif player[0]>0: #if player is recentered, move the offset not the player
+            offset += 5
+            player[2] = 0
+            RowNum = 0
+        
+        else:
+            player[2]=0
+            
+    elif keys[pygame.K_RIGHT]:
+        if offset < 660 and player[0]<0: #check if you've reached the left edge of the map
+            player[2] = +5#let player approach side of game screen
+            RowNum = 0
+            
+        elif player[0] < 400 and offset < 1500:#check if we're on the far right edge of the map
+            player[2] = +5#let player get back to the center of the game screen
+            RowNum = 0
+        
+        elif player[0]>0: #if player is recentered, move the offset not the player
+            offset -= 5
+            player[2] = 0
+            RowNum = 0
+        
+        else:
+            player[2]=0
+        
+    #Jump   
+    if isOnGround == True and keys[pygame.K_UP]:
+        player[3] -= 15
+        isOnGround = False
+        
+    if isOnGround == False:
+        player[3] += 1 #gravity
+        
+    player[0]+=player[2] #add x velocity to pos
+    player[1]+=player[3] #add y velocity to y pos
+    
+    #ground collision
+    if player[1] > 700:
+        isOnGround = True
+        player[3] = 0
+        player[1] =650
+while running: #Main game loop##########################
+    #input section
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+            
+    keys = pygame.key.get_pressed()
+    #physics section###############################
+    
+    move_player()
+    
+    # Update Animation Information
+    # Only animate when in motion
+    if player[2]+offset<0 or player[2]+offset>0 or player[3] <0 or player[3]>0: #left animation
+        RowNum = 0
+
+        ticker+=1
+        if ticker%10==0: #only change frames every 10 ticks
+          frameNum+=1
+    
+        if frameNum>2: 
+           frameNum = 0
+    
+    
+    #Render section ########################
+    screen.fill((135, 206, 235))
+    
+    draw_clouds()
+    draw_trees()
+    
+    #pygame.draw.rect(screen, (255, 0, 255), (player [0], player[1], 50, 50))
+    screen.blit(Guy, (player[0], player[1]-45), (frameWidth*frameNum, RowNum*frameHeight, frameWidth, frameHeight))
+        
+    draw_platforms()
+    
+    pygame.draw.rect(screen, (20, 170, 20), (0, 700, 1500, 100))
+    pygame.display.flip()
+    
+pygame.quit
