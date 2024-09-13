@@ -1,0 +1,385 @@
+import pygame
+import random
+from winsound import Beep
+pygame.init()  
+pygame.display.set_caption("easy platformer")  # sets the window title
+screen = pygame.display.set_mode((800, 800))  # creates game screen
+screen.fill((0,0,0))
+clock = pygame.time.Clock() #set up clock
+gameover = False #variable to run our game loop
+
+#spritesheets
+Link = pygame.image.load('Link.png') #load your spritesheet
+
+Link.set_colorkey((255, 0, 255)) #this makes bright pink (255, 0, 255) transparent (sort of)
+
+sky = pygame.image.load('sky.jpg')
+
+#CONSTANTS
+LEFT=0
+RIGHT=1
+UP = 2
+DOWN = 3
+
+#CONSTANTS 2
+a=0
+d=1
+w = 2
+s = 3
+
+
+#player variables
+xpos = 500 #xpos of player
+ypos = 200 #ypos of player
+vx = 0 #x velocity of player
+vy = 0 #y velocity of player
+keys = [False, False, False, False] #this list holds whether each key has been pressed
+isOnGround = False #this variable stops gravity from pulling you down more when on a platform
+health = 100
+
+#player variables
+xpos2 = 400 #xpos of player
+ypos2 = 200 #ypos of player
+vx2 = 0 #x velocity of player
+vy2 = 0 #y velocity of player
+keys2 = [False, False, False, False]
+isOnGround2 = False #this variable stops gravity from pulling you down more when on a platform
+health = 100
+health2 = 100
+
+#enemies are held as a LIST. Lists have square brackets []
+#you already know variables are storage boxes. Lists are storage boxes with slots in them!
+enemy1 = [200, 630, 0] # each monster has a xpos, ypos, and ticker
+enemy2 = [400, 780, 45]
+enemy3 = [650, 780, 45]
+
+#animation variables variables
+frameWidth = 64
+frameHeight = 96
+RowNum = 3 #for left animation, this will need to change for other animations
+frameNum = 0
+ticker = 0
+
+def enemyMove(enemyInfo):
+    #print(enemyInfo)
+    enemyInfo[2]+=1
+    if enemyInfo[2] <= 40:
+        enemyInfo[0] += 1
+    elif enemyInfo[2] <= 80:
+        enemyInfo[0] -=1
+    else:
+        enemyInfo[2] = 0 #reset timer
+        
+def enemyCollide(enemyInfo, playerX, playerY):
+    if playerX+20>enemyInfo[0]: #right side of player, left side of enemy
+        if playerX < enemyInfo[0]+20: #left sdie of player, right side of enemy
+            if playerY < enemyInfo[1]+20: #top of the player, bottom of the enemy
+                if playerY+20 > enemyInfo[1]:
+                    return True
+    else:
+        return False
+    
+def enemyCollide2(enemyInfo, playerX, playerY):
+    if playerX+64>enemyInfo[0]: #right side of player, left side of enemy
+        if playerX < enemyInfo[0]+20: #left sdie of player, right side of enemy
+            if playerY < enemyInfo[1]+96: #top of the player, bottom of the enemy
+                if playerY+96 > enemyInfo[1]:
+                    return True
+    else:
+        return False
+
+
+while not gameover and health > 0 and health2 > 0: #GAME LOOP############################################################
+    clock.tick(60) #FPS
+    
+    #Input Section------------------------------------------------------------
+    for event in pygame.event.get(): #quit game if x is pressed in top corner
+        if event.type == pygame.QUIT:
+            gameover = True
+      
+        if event.type == pygame.KEYDOWN: #check for key pressed
+            if event.key == pygame.K_LEFT:
+                keys[LEFT]=True
+                
+            if event.key == pygame.K_RIGHT:
+                keys[RIGHT]=True
+                
+            if event.key == pygame.K_UP:
+                keys[UP]=True
+                
+            if event.key == pygame.K_a:
+                keys2[a]=True
+            
+            if event.key == pygame.K_d:
+                keys2[d]=True
+                
+            if event.key == pygame.K_w:
+                keys2[w]=True
+                
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:
+                keys[LEFT]=False
+                
+            if event.key == pygame.K_RIGHT:
+                keys[RIGHT]=False
+                
+            if event.key == pygame.K_UP:
+                keys[UP]=False
+                    
+            if event.key == pygame.K_a:
+                keys2[a]=False
+            
+            if event.key == pygame.K_d:
+                keys2[d]=False
+                
+            if event.key == pygame.K_w:
+                keys2[w]=False
+                
+            
+                
+      
+           
+
+          
+    #physics section--------------------------------------------------------------------
+    #LEFT MOVEMENT
+                
+    #p1 update
+    if keys[LEFT]==True:
+        vx=-5
+        
+    elif keys[RIGHT]==True:
+        vx=+5
+    else:
+        vx = 0
+      
+    #p2 update
+    if keys2[a]==True:
+        vx2=-5
+        
+    elif keys2[d]==True:
+        vx2=+5
+       
+    #turn off velocity
+    else:
+        vx2 = 0
+
+        
+        
+        #JUMPING
+    if keys[UP] == True and isOnGround == True: #only jump when on the ground
+        vy = -15
+        isOnGround = False
+        Beep(500, 50)
+        
+    if keys2[w] == True and isOnGround2 == True: #only jump when on the ground
+        vy2 = -15
+        isOnGround2 = False
+        Beep(700, 50)
+      
+    #function call for enemy movement
+    enemyMove(enemy1)
+
+    enemyMove(enemy2)
+    
+    enemyMove(enemy3)
+    
+    #check collision with enemies
+    if enemyCollide2(enemy1, xpos, ypos):
+        print("hit")
+        Beep(2000, 50)
+        health  -=10
+    if enemyCollide2(enemy2, xpos, ypos):
+        print("hit")
+        Beep(2000, 50)
+        health  -=10
+    if enemyCollide2(enemy3, xpos, ypos):
+        print("hit")
+        Beep(2000, 50)
+        health  -=10
+        
+    if enemyCollide(enemy1, xpos2, ypos2):
+        print("hit")
+        Beep(2000, 50)
+        health2  -=10
+    if enemyCollide(enemy2, xpos2, ypos2):
+        print("hit")
+        Beep(2000, 50)
+        health2  -=10
+    if enemyCollide(enemy3, xpos2, ypos2):
+        print("hit")
+        Beep(2000, 50)
+        health2  -=10
+
+    
+    #COLLISION
+    if xpos>40 and xpos<200 and ypos+96 >750 and ypos+96 <814:
+        ypos = 750-96
+        isOnGround = True
+        vy = 0
+    elif xpos>140 and xpos<300 and ypos+96 >650 and ypos+96 <670:
+        ypos = 650-96
+        isOnGround = True
+        vy = 0
+    elif xpos>340 and xpos<500 and ypos+96 >550 and ypos+96 <570:
+        ypos = 550-96
+        isOnGround = True
+        vy = 0
+    elif xpos>240 and xpos<400 and ypos+96 >450 and ypos+96 <470:
+        ypos = 450-96
+        isOnGround = True
+        vy = 0
+    elif xpos>290 and xpos<450 and ypos+96 >250 and ypos+96 <270:
+        ypos = 250-96
+        isOnGround = True
+        vy = 0
+    elif xpos>40 and xpos<200 and ypos+96 >200 and ypos+96 <220:
+        ypos = 200-96
+        isOnGround = True
+        vy = 0
+    elif xpos>90 and xpos<250 and ypos+96 >350 and ypos+96 <370:
+        ypos = 350-96
+        isOnGround = True
+        vy = 0
+    else:
+        isOnGround = False
+# Player 2 collision-------------------------------------------
+    if xpos2>100 and xpos2<200 and ypos2+40 >750 and ypos2+40 <770:
+        ypos2 = 750-40
+        isOnGround2 = True
+        vy2 = 0
+    elif xpos2>200 and xpos2<300 and ypos2+40 >650 and ypos2+40 <670:
+        ypos2 = 650-40
+        isOnGround2 = True
+        vy2 = 0
+    elif xpos2>400 and xpos2<500 and ypos2+40 >550 and ypos2+40 <570:
+        ypos2 = 550-40
+        isOnGround2 = True
+        vy2 = 0
+    elif xpos2>300 and xpos2<400 and ypos2+40 >450 and ypos2+40 <470:
+        ypos2 = 450-40
+        isOnGround2 = True
+        vy2 = 0
+    elif xpos2>350 and xpos2<450 and ypos2+40 >250 and ypos2+40 <270:
+        ypos2 = 250-40
+        isOnGround2 = True
+        vy2 = 0
+    elif xpos2>100 and xpos2<200 and ypos2+40 >200 and ypos2+40 <220:
+        ypos2 = 200-40
+        isOnGround2 = True
+        vy2 = 0
+    elif xpos2>150 and xpos2<250 and ypos2+40 >350 and ypos2+40 <370:
+        ypos2 = 350-40
+        isOnGround2 = True
+        vy2 = 0
+    else:
+        isOnGround2 = False
+
+
+    
+    #stop falling if on bottom of game screen
+    if ypos > 704:
+        isOnGround = True
+        vy = 0
+        ypos = 704
+        
+    if ypos2 > 760:
+        isOnGround2 = True
+        vy2 = 0
+        ypos2 = 760
+    
+    #gravity
+    if isOnGround == False:
+        vy+=.4 #notice this grows over time, aka ACCELERATION
+        
+    if isOnGround2 == False:
+        vy2+=.4 #notice this grows over time, aka ACCELERATION
+    
+
+    #update player position
+    xpos+=vx 
+    ypos+=vy
+    
+    xpos2+=vx2 
+    ypos2+=vy2
+    
+    #Animation Section
+    
+    # Only animate when in motion
+    if vx < 0: #left animation
+        RowNum = 0
+        # Ticker is a spedometer. We don't want Link animating as fast as the
+        # processor can process! Update Animation Frame each time ticker goes over
+        ticker+=1
+
+        if ticker%10==0: #only change frames every 10 ticks
+          frameNum+=1
+           #If we are over the number of frames in our sprite, reset to 0.
+           #In this particular case, there are 10 frames (0 through 9)
+        if frameNum>7: 
+           frameNum = 0
+           
+                
+ 
+
+    if vx > 0: #right animation
+        RowNum = 1
+
+        ticker+=1
+        if ticker%10==0: #only change frames every 10 ticks
+          frameNum+=1
+           #If we are over the number of frames in our sprite, reset to 0.
+           #In this particular case, there are 10 frames (0 through 9)
+        if frameNum>7: 
+           frameNum = 0
+    
+    
+  
+    # RENDER Section--------------------------------------------------------------------------------
+            
+    screen.fill((0,0,0)) #wipe screen so it doesn't smear #lol mo messed with your code
+    
+    screen.blit(sky, (0,0), (0,0, 800, 800))
+  
+    #pygame.draw.rect(screen, (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)), (xpos, ypos, 20, 40))
+    
+    screen.blit(Link, (xpos, ypos), (frameWidth*frameNum, RowNum*frameHeight, frameWidth, frameHeight))
+    
+    pygame.draw.rect(screen, (200,230,100) , (xpos2, ypos2, 20, 40))
+    
+    #first platform
+    pygame.draw.rect(screen, (200, 0, 100), (100, 750, 100, 20))
+    
+    #second platform
+    pygame.draw.rect(screen, (100, 0, 200), (200, 650, 100, 20))
+    
+    #third platform
+    pygame.draw.rect(screen, (100, 0, 200), (400, 550, 100, 20))
+    
+    #fourth platform
+    pygame.draw.rect(screen, (100, 230, 200), (300, 450, 100, 20))
+    
+    #fifth platform
+    pygame.draw.rect(screen, (100, 0, 200), (350, 250, 100, 20))
+    
+    #sixth platform
+    pygame.draw.rect(screen, (100, 0, 200), (100, 200, 100, 20))
+    
+    #draw enemy
+    
+    pygame.draw.rect(screen, (255,255,255), (enemy1[0], enemy1[1], 20, 20)) #access first and second slot of LIST
+  
+    pygame.draw.rect(screen, (255,255,255), (enemy2[0], enemy2[1], 20, 20))
+    
+    pygame.draw.rect(screen, (255,255,255), (enemy3[0], enemy3[1], 20, 20))
+    
+    
+    #seventh platform
+    pygame.draw.rect(screen, (200, 100, 200), (150, 350, 100, 20))
+    
+    pygame.display.flip()#this actually puts the pixel on the screen
+    
+#end game loop------------------------------------------------------------------------------
+if health <=0:
+    print("game over, you died")
+pygame.quit()
